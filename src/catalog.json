@@ -1,0 +1,26 @@
+[
+  {
+    "id": "PRT-001",
+    "name": "Hex Bolt M8x30",
+    "category": "fasteners",
+    "unit_price": 0.45,
+    "currency": "EUR",
+    "in_stock": true
+  },
+  {
+    "id": "PRT-002",
+    "name": "Bearing 6205-2RS",
+    "category": "bearings",
+    "unit_price": 12.80,
+    "currency": "EUR",
+    "in_stock": true
+  },
+  {
+    "id": "PRT-003",
+    "name": "O-Ring 25x3 NBR70",
+    "category": "seals",
+    "unit_price": 0.95,
+    "currency": "EUR",
+    "in_stock": false
+  }
+]

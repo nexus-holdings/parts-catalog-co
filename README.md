@@ -1,10 +1,6 @@
-# {Company Name}
+# Parts Catalog Co
 
-> Part of the Nexus Holdings platform.
-
-## Mission
-
-<!-- One-sentence mission statement -->
+> Part of the Nexus Holdings platform. Provides a parts-catalog lookup service consumed by Gizmo Test Co.
 
 ## Quick Start
 
@@ -12,18 +8,57 @@
 2. Check the GitHub Project for current milestones and tickets
 3. Review `wiki/conventions.md` before writing any code
 
+## Usage
+
+### As a Python module
+
+```python
+from src.lookup import lookup
+
+part = lookup("PRT-001")
+# => {"id": "PRT-001", "name": "Hex Bolt M8x30", "category": "fasteners", ...}
+```
+
+`lookup(part_id)` returns the matching part record as a dict, or raises `KeyError` if the part is not found.
+
+### CLI
+
+```bash
+python -m src.lookup PRT-001
+```
+
+Prints the part record as JSON to stdout. Exits 1 with an error message if the part is not found.
+
+### Catalog format
+
+Parts live in `src/catalog.json` — a JSON array of records:
+
+```json
+{
+  "id": "PRT-001",
+  "name": "Hex Bolt M8x30",
+  "category": "fasteners",
+  "unit_price": 0.45,
+  "currency": "EUR",
+  "in_stock": true
+}
+```
+
+## Testing
+
+```bash
+uv run pytest tests/
+```
+
 ## Structure
 
 ```
-wiki/                   # Company knowledge base
-  WIKI.md               # Index — load this first
-  architecture.md       # System design
-  conventions.md        # Coding standards + process
-  domain.md             # Business context + terminology
-  decisions/            # ADR-style decision log
-MEMORY.md               # Claude Code AutoMemory index
-.claude/memory/         # AutoDream topic files (session learnings)
-src/                    # Source code
+src/
+  catalog.json        # Parts data
+  lookup.py           # Lookup function and CLI entry point
+tests/
+  test_lookup.py      # Unit tests
+wiki/                 # Company knowledge base
 ```
 
 ## Agents
