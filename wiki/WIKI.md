@@ -1,4 +1,4 @@
-# {Company Name} — Wiki Index
+# Parts Catalog Co — Wiki Index
 
 > Load this file at the start of every session to orient yourself.
 
