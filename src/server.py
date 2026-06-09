@@ -17,18 +17,16 @@ _PART_RE = re.compile(r"^/parts/([A-Za-z0-9_-]+)$")
 class CatalogHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
-        path = parsed.path
-        qs = parse_qs(parsed.query)
-
-        if path == "/health":
+        if self.path == "/health":
             self._json_response(200, {"status": "ok"})
-        elif path == "/parts":
+        elif parsed.path == "/parts":
             catalog = load_catalog()
-            category = qs.get("category", [None])[0]
-            if category is not None:
-                catalog = [p for p in catalog if p.get("category") == category]
+            params = parse_qs(parsed.query)
+            if "category" in params:
+                cat = params["category"][0]
+                catalog = [p for p in catalog if p.get("category") == cat]
             self._json_response(200, catalog)
-        elif m := _PART_RE.match(path):
+        elif m := _PART_RE.match(self.path):
             part_id = m.group(1)
             try:
                 part = lookup(part_id)
