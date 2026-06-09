@@ -24,16 +24,6 @@ class CatalogHandler(BaseHTTPRequestHandler):
             q = params.get("q", [""])[0].strip()
             if not q:
                 self._json_response(400, {"error": "Missing or empty query parameter 'q'"})
-            else:
-                catalog = load_catalog()
-                term = q.lower()
-                results = [p for p in catalog if term in p.get("name", "").lower()]
-                self._json_response(200, results)
-        elif parsed.path == "/search":
-            params = parse_qs(parsed.query)
-            q = params.get("q", [""])[0].strip()
-            if not q:
-                self._json_response(400, {"error": "Missing or empty query parameter 'q'"})
                 return
             catalog = load_catalog()
             term = q.lower()
