@@ -4,6 +4,7 @@ import json
 import re
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import parse_qs, urlparse
 
 from src.lookup import load_catalog, lookup
 
@@ -15,12 +16,19 @@ _PART_RE = re.compile(r"^/parts/([A-Za-z0-9_-]+)$")
 
 class CatalogHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == "/health":
+        parsed = urlparse(self.path)
+        path = parsed.path
+        qs = parse_qs(parsed.query)
+
+        if path == "/health":
             self._json_response(200, {"status": "ok"})
-        elif self.path == "/parts":
+        elif path == "/parts":
             catalog = load_catalog()
+            category = qs.get("category", [None])[0]
+            if category is not None:
+                catalog = [p for p in catalog if p.get("category") == category]
             self._json_response(200, catalog)
-        elif m := _PART_RE.match(self.path):
+        elif m := _PART_RE.match(path):
             part_id = m.group(1)
             try:
                 part = lookup(part_id)

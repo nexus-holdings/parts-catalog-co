@@ -74,3 +74,24 @@ def test_content_type_header(server):
     req = Request(f"{server}/health")
     resp = urlopen(req)
     assert resp.headers["Content-Type"] == "application/json"
+
+
+def test_category_filter_known(server):
+    status, body = _get(server, "/parts?category=fasteners")
+    assert status == 200
+    assert isinstance(body, list)
+    assert all(p["category"] == "fasteners" for p in body)
+    assert len(body) >= 1
+
+
+def test_category_filter_unknown(server):
+    status, body = _get(server, "/parts?category=nonexistent")
+    assert status == 200
+    assert body == []
+
+
+def test_parts_without_category_unchanged(server):
+    status_all, body_all = _get(server, "/parts")
+    status_cat, body_cat = _get(server, "/parts?category=fasteners")
+    assert status_all == 200
+    assert len(body_all) > len(body_cat)
