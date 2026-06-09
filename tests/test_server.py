@@ -139,3 +139,71 @@ def test_parts_no_filter_unchanged(server):
     assert len(body_all) >= 3
     assert len(body_cat) < len(body_all)
     assert all(p["category"] == "fasteners" for p in body_cat)
+
+
+def test_search_returns_matches(server):
+    status, body = _get(server, "/search?q=bolt")
+    assert status == 200
+    assert isinstance(body, list)
+    assert len(body) >= 1
+    assert all("bolt" in p["name"].lower() for p in body)
+
+
+def test_search_case_insensitive(server):
+    status_lower, body_lower = _get(server, "/search?q=bolt")
+    status_upper, body_upper = _get(server, "/search?q=BOLT")
+    assert status_lower == 200
+    assert status_upper == 200
+    assert body_lower == body_upper
+
+
+def test_search_no_matches_returns_empty_list(server):
+    status, body = _get(server, "/search?q=xyzzynonexistent99")
+    assert status == 200
+    assert body == []
+
+
+def test_search_missing_q_returns_400(server):
+    status, body = _get_error(server, "/search")
+    assert status == 400
+    assert "error" in body
+
+
+def test_search_empty_q_returns_400(server):
+    status, body = _get_error(server, "/search?q=")
+    assert status == 400
+    assert "error" in body
+
+
+def test_search_returns_matches(server):
+    status, body = _get(server, "/search?q=bolt")
+    assert status == 200
+    assert isinstance(body, list)
+    assert len(body) >= 1
+    assert all("bolt" in p["name"].lower() for p in body)
+
+
+def test_search_case_insensitive(server):
+    status_lower, body_lower = _get(server, "/search?q=bolt")
+    status_upper, body_upper = _get(server, "/search?q=BOLT")
+    assert status_lower == 200
+    assert status_upper == 200
+    assert body_lower == body_upper
+
+
+def test_search_no_matches(server):
+    status, body = _get(server, "/search?q=zzznomatch")
+    assert status == 200
+    assert body == []
+
+
+def test_search_missing_q(server):
+    status, body = _get_error(server, "/search")
+    assert status == 400
+    assert "error" in body
+
+
+def test_search_empty_q(server):
+    status, body = _get_error(server, "/search?q=")
+    assert status == 400
+    assert "error" in body
