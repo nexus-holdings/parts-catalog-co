@@ -23,7 +23,7 @@ def lookup(part_id: str, *, catalog_path: Path = CATALOG_PATH) -> dict:
 
 def main() -> int:
     if len(sys.argv) != 2:
-        print(f"Usage: python -m src.lookup <part_id>", file=sys.stderr)
+        print("Usage: python -m src.lookup <part_id>", file=sys.stderr)
         return 1
 
     part_id = sys.argv[1]

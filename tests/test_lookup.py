@@ -1,7 +1,6 @@
 """Tests for the parts catalog lookup service."""
 
 import json
-import tempfile
 from pathlib import Path
 
 import pytest
