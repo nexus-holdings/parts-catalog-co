@@ -35,6 +35,41 @@ class CatalogHandler(BaseHTTPRequestHandler):
             if "category" in params:
                 cat = params["category"][0]
                 catalog = [p for p in catalog if p.get("category") == cat]
+
+            offset = 0
+            if "offset" in params:
+                try:
+                    offset = int(params["offset"][0])
+                except ValueError:
+                    self._json_response(
+                        400, {"error": "Invalid 'offset': must be an integer"}
+                    )
+                    return
+                if offset < 0:
+                    self._json_response(
+                        400, {"error": "Invalid 'offset': must not be negative"}
+                    )
+                    return
+
+            limit = None
+            if "limit" in params:
+                try:
+                    limit = int(params["limit"][0])
+                except ValueError:
+                    self._json_response(
+                        400, {"error": "Invalid 'limit': must be an integer"}
+                    )
+                    return
+                if limit <= 0:
+                    self._json_response(
+                        400, {"error": "Invalid 'limit': must be a positive integer"}
+                    )
+                    return
+                limit = min(limit, 500)
+
+            catalog = catalog[offset:]
+            if limit is not None:
+                catalog = catalog[:limit]
             self._json_response(200, catalog)
         elif m := _PART_RE.match(self.path):
             part_id = m.group(1)

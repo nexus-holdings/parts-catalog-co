@@ -131,3 +131,81 @@ def test_search_empty_q_returns_400(server):
     status, body = _get_error(server, "/search?q=")
     assert status == 400
     assert "error" in body
+
+
+def test_parts_no_pagination_params_returns_full_list(server):
+    status, body = _get(server, "/parts")
+    assert status == 200
+    assert len(body) == 3
+
+
+def test_parts_limit_only_returns_first_n(server):
+    status_all, body_all = _get(server, "/parts")
+    status, body = _get(server, "/parts?limit=2")
+    assert status == 200
+    assert body == body_all[:2]
+
+
+def test_parts_offset_only_skips_n(server):
+    status_all, body_all = _get(server, "/parts")
+    status, body = _get(server, "/parts?offset=1")
+    assert status == 200
+    assert body == body_all[1:]
+
+
+def test_parts_offset_zero_is_valid(server):
+    status_all, body_all = _get(server, "/parts")
+    status, body = _get(server, "/parts?offset=0")
+    assert status == 200
+    assert body == body_all
+
+
+def test_parts_limit_and_offset_combined(server):
+    status_all, body_all = _get(server, "/parts")
+    status, body = _get(server, "/parts?offset=1&limit=1")
+    assert status == 200
+    assert body == body_all[1:2]
+
+
+def test_parts_category_and_pagination_combined(server):
+    status, body = _get(server, "/parts?category=fasteners&limit=1&offset=0")
+    assert status == 200
+    assert len(body) == 1
+    assert body[0]["category"] == "fasteners"
+
+
+def test_parts_limit_clamped_at_500(server):
+    status_all, body_all = _get(server, "/parts")
+    status, body = _get(server, "/parts?limit=1000")
+    assert status == 200
+    assert body == body_all
+
+
+def test_parts_limit_non_integer_returns_400(server):
+    status, body = _get_error(server, "/parts?limit=abc")
+    assert status == 400
+    assert "limit" in body["error"]
+
+
+def test_parts_limit_negative_returns_400(server):
+    status, body = _get_error(server, "/parts?limit=-1")
+    assert status == 400
+    assert "limit" in body["error"]
+
+
+def test_parts_limit_zero_returns_400(server):
+    status, body = _get_error(server, "/parts?limit=0")
+    assert status == 400
+    assert "limit" in body["error"]
+
+
+def test_parts_offset_non_integer_returns_400(server):
+    status, body = _get_error(server, "/parts?offset=abc")
+    assert status == 400
+    assert "offset" in body["error"]
+
+
+def test_parts_offset_negative_returns_400(server):
+    status, body = _get_error(server, "/parts?offset=-1")
+    assert status == 400
+    assert "offset" in body["error"]
