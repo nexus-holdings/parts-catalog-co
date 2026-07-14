@@ -131,3 +131,63 @@ def test_search_empty_q_returns_400(server):
     status, body = _get_error(server, "/search?q=")
     assert status == 400
     assert "error" in body
+
+
+def test_categories_normal_aggregation(server):
+    status, body = _get(server, "/categories")
+    assert status == 200
+    assert body == [
+        {"category": "bearings", "count": 1},
+        {"category": "fasteners", "count": 1},
+        {"category": "seals", "count": 1},
+    ]
+
+
+def test_categories_ignores_query_params(server):
+    status, body = _get(server, "/categories?category=bearings&limit=1")
+    assert status == 200
+    assert body == [
+        {"category": "bearings", "count": 1},
+        {"category": "fasteners", "count": 1},
+        {"category": "seals", "count": 1},
+    ]
+
+
+def test_categories_empty_catalog(monkeypatch, tmp_path):
+    empty_path = tmp_path / "empty_catalog.json"
+    empty_path.write_text("[]")
+    monkeypatch.setattr("src.server.load_catalog", lambda: json.loads(empty_path.read_text()))
+
+    httpd = HTTPServer(("127.0.0.1", 0), CatalogHandler)
+    port = httpd.server_address[1]
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    try:
+        status, body = _get(f"http://127.0.0.1:{port}", "/categories")
+        assert status == 200
+        assert body == []
+    finally:
+        httpd.shutdown()
+
+
+def test_categories_missing_category_aggregated_as_uncategorized(monkeypatch, tmp_path):
+    parts = [
+        {"id": "PRT-100", "name": "Widget", "category": "", "unit_price": 1.0},
+        {"id": "PRT-101", "name": "Gadget", "unit_price": 2.0},
+        {"id": "PRT-102", "name": "Bolt", "category": "fasteners", "unit_price": 0.5},
+    ]
+    monkeypatch.setattr("src.server.load_catalog", lambda: parts)
+
+    httpd = HTTPServer(("127.0.0.1", 0), CatalogHandler)
+    port = httpd.server_address[1]
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    try:
+        status, body = _get(f"http://127.0.0.1:{port}", "/categories")
+        assert status == 200
+        assert body == [
+            {"category": "fasteners", "count": 1},
+            {"category": "uncategorized", "count": 2},
+        ]
+    finally:
+        httpd.shutdown()

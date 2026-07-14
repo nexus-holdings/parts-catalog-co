@@ -29,6 +29,16 @@ class CatalogHandler(BaseHTTPRequestHandler):
             term = q.lower()
             results = [p for p in catalog if term in p.get("name", "").lower()]
             self._json_response(200, results)
+        elif parsed.path == "/categories":
+            catalog = load_catalog()
+            counts: dict[str, int] = {}
+            for p in catalog:
+                cat = p.get("category") or "uncategorized"
+                counts[cat] = counts.get(cat, 0) + 1
+            result = [
+                {"category": cat, "count": counts[cat]} for cat in sorted(counts)
+            ]
+            self._json_response(200, result)
         elif parsed.path == "/parts":
             catalog = load_catalog()
             params = parse_qs(parsed.query)
